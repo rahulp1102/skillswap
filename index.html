@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkillSwap - Campus-first peer mentoring</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Toast Notification Container -->
+    <div id="toast-container"></div>
+
+    <!-- Landing Page -->
+    <div id="landing-page" class="page active">
+        <nav class="landing-nav">
+            <div class="container">
+                <div class="nav-content">
+                    <div class="logo">SkillSwap</div>
+                    <button class="btn btn--primary" onclick="navigateTo('signin')">Sign in with Google</button>
+                </div>
+            </div>
+        </nav>
+
+        <section class="hero">
+            <div class="container">
+                <h1 class="hero-title">Teach an hour, learn an hour</h1>
+                <p class="hero-subtitle">Campus-first peer mentoring, credit-based</p>
+                <div class="search-container">
+                    <input type="text" class="search-input" placeholder="Find a mentor for Python, UI/UX, Aptitude..." id="landing-search">
+                    <button class="btn btn--primary" onclick="handleLandingSearch()">Search</button>
+                </div>
+                <button class="btn btn--lg btn--primary cta-button" onclick="navigateTo('signin')">Sign in with Google</button>
+            </div>
+        </section>
+
+        <section class="skills-directory">
+            <div class="container">
+                <h2>Trending Skills</h2>
+                <div class="skill-chips" id="trending-skills"></div>
+                
+                <div class="rising-section">
+                    <h3>Rising this week 📈</h3>
+                    <div class="skill-chips" id="rising-skills"></div>
+                </div>
+
+                <div class="stats-bar">
+                    <div class="stat-item">
+                        <span class="stat-value">145</span>
+                        <span class="stat-label">Sessions this week</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">89</span>
+                        <span class="stat-label">Active mentors</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">340</span>
+                        <span class="stat-label">Skills offered</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="testimonials">
+            <div class="container">
+                <h2>Success Stories</h2>
+                <div class="testimonial-grid">
+                    <div class="testimonial-card">
+                        <p class="testimonial-text">"Learned Python basics in just 3 sessions. My mentor was patient and explained everything clearly!"</p>
+                        <p class="testimonial-author">- Priya, JECRC</p>
+                    </div>
+                    <div class="testimonial-card">
+                        <p class="testimonial-text">"Teaching on SkillSwap helped me solidify my own understanding. Win-win!"</p>
+                        <p class="testimonial-author">- Rahul, BITS Pilani</p>
+                    </div>
+                    <div class="testimonial-card">
+                        <p class="testimonial-text">"Found a UI/UX mentor from my own campus. The credit system is genius!"</p>
+                        <p class="testimonial-author">- Asha, Delhi University</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Sign In Page -->
+    <div id="signin-page" class="page">
+        <div class="auth-container">
+            <div class="auth-card">
+                <h2>Welcome to SkillSwap</h2>
+                <p>Sign in to start teaching and learning</p>
+                <button class="btn btn--primary btn--full-width google-btn" onclick="handleGoogleSignIn()">
+                    <svg width="18" height="18" viewBox="0 0 18 18" style="margin-right: 8px;">
+                        <path fill="#4285F4" d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.8 7.8 0 0 0 2.38-5.88c0-.57-.05-.66-.15-1.18z"></path>
+                        <path fill="#34A853" d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2a4.8 4.8 0 0 1-7.18-2.54H1.83v2.07A8 8 0 0 0 8.98 17z"></path>
+                        <path fill="#FBBC05" d="M4.5 10.52a4.8 4.8 0 0 1 0-3.04V5.41H1.83a8 8 0 0 0 0 7.18l2.67-2.07z"></path>
+                        <path fill="#EA4335" d="M8.98 4.18c1.17 0 2.23.4 3.06 1.2l2.3-2.3A8 8 0 0 0 1.83 5.4L4.5 7.49a4.77 4.77 0 0 1 4.48-3.3z"></path>
+                    </svg>
+                    Sign in with Google
+                </button>
+                <div class="demo-accounts">
+                    <p><strong>Demo Test Accounts:</strong></p>
+                    <button class="btn btn--sm btn--outline" onclick="demoLogin('learner@test.com')">Learner Demo</button>
+                    <button class="btn btn--sm btn--outline" onclick="demoLogin('mentor@test.com')">Mentor Demo</button>
+                    <button class="btn btn--sm btn--outline" onclick="demoLogin('admin@test.com')">Admin Demo</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Role Selection Page -->
+    <div id="role-selection-page" class="page">
+        <div class="auth-container">
+            <div class="auth-card">
+                <h2>Choose Your Role</h2>
+                <p>Are you a Student or Professional?</p>
+                <div class="role-buttons">
+                    <button class="role-card" onclick="selectRole('student')">
+                        <div class="role-icon">🎓</div>
+                        <h3>Student</h3>
+                        <p>Learn and teach with campus peers</p>
+                    </button>
+                    <button class="role-card" onclick="selectRole('professional')">
+                        <div class="role-icon">💼</div>
+                        <h3>Professional</h3>
+                        <p>Share industry experience</p>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Onboarding Page -->
+    <div id="onboarding-page" class="page">
+        <div class="auth-container">
+            <div class="auth-card onboarding-card">
+                <h2>Complete Your Profile</h2>
+                <form id="onboarding-form">
+                    <div class="form-group">
+                        <label class="form-label">Name</label>
+                        <input type="text" class="form-control" id="onboarding-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" id="onboarding-email" required readonly>
+                    </div>
+                    <div id="student-fields" style="display: none;">
+                        <div class="form-group">
+                            <label class="form-label">College</label>
+                            <select class="form-control" id="onboarding-college">
+                                <option value="">Select your college</option>
+                                <option value="JECRC">JECRC, Jaipur</option>
+                                <option value="BITS Pilani">BITS Pilani</option>
+                                <option value="Delhi University">Delhi University</option>
+                                <option value="IIT Delhi">IIT Delhi</option>
+                                <option value="NIT Trichy">NIT Trichy</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Year/Semester</label>
+                            <select class="form-control" id="onboarding-year">
+                                <option value="1">1st Year</option>
+                                <option value="2">2nd Year</option>
+                                <option value="3">3rd Year</option>
+                                <option value="4">4th Year</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">CGPA (Optional)</label>
+                            <input type="number" class="form-control" id="onboarding-cgpa" step="0.1" min="0" max="10">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Campus Invite Code (Optional)</label>
+                            <input type="text" class="form-control" id="onboarding-invite" placeholder="e.g., JECRC2025">
+                        </div>
+                    </div>
+                    <div id="professional-fields" style="display: none;">
+                        <div class="form-group">
+                            <label class="form-label">Current Role</label>
+                            <input type="text" class="form-control" id="onboarding-role" placeholder="e.g., Software Engineer">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Company Name</label>
+                            <input type="text" class="form-control" id="onboarding-company">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Years of Experience (Optional)</label>
+                            <input type="number" class="form-control" id="onboarding-experience" min="0">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn--primary btn--full-width">Complete Onboarding</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div id="dashboard-page" class="page">
+        <nav class="dashboard-nav">
+            <div class="nav-content">
+                <div class="logo">SkillSwap</div>
+                <div class="search-container nav-search">
+                    <input type="text" class="search-input" placeholder="Search skills or mentors..." id="dashboard-search">
+                </div>
+                <div class="nav-right">
+                    <div class="credits-display" onclick="navigateTo('credits')">
+                        <span class="credits-label">Credits:</span>
+                        <span class="credits-value" id="credits-value">10/10</span>
+                    </div>
+                    <div class="user-menu">
+                        <button class="user-avatar" onclick="toggleUserMenu()" id="user-avatar">U</button>
+                        <div class="user-dropdown" id="user-dropdown">
+                            <a href="#" onclick="navigateTo('profile'); return false;">My Profile</a>
+                            <a href="#" onclick="navigateTo('credits'); return false;">Credit Ledger</a>
+                            <a href="#" onclick="navigateTo('campus'); return false;">Campus Hub</a>
+                            <a href="#" onclick="handleLogout(); return false;">Sign Out</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="dashboard-content">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('discover')">Discover Mentors</button>
+                <button class="tab" onclick="switchTab('learning')">My Learning</button>
+            </div>
+
+            <!-- Discover Mentors Tab -->
+            <div id="discover-tab" class="tab-content active">
+                <div class="content-layout">
+                    <aside class="filters-sidebar">
+                        <h3>Filters</h3>
+                        <div class="filter-group">
+                            <label class="form-label">Campus</label>
+                            <select class="form-control" id="filter-campus" onchange="applyFilters()">
+                                <option value="all">All campuses</option>
+                                <option value="same">Same campus only</option>
+                                <option value="other">Other campuses</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="form-label">Proficiency Level</label>
+                            <select class="form-control" id="filter-proficiency" onchange="applyFilters()">
+                                <option value="0">Any level</option>
+                                <option value="3">≥ 3 stars</option>
+                                <option value="4">≥ 4 stars</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="filter-verified" onchange="applyFilters()">
+                                Verified only
+                            </label>
+                        </div>
+                        <div class="filter-group">
+                            <label class="form-label">Availability</label>
+                            <select class="form-control" id="filter-availability" onchange="applyFilters()">
+                                <option value="all">Any time</option>
+                                <option value="week">Next 7 days</option>
+                                <option value="weekend">This weekend</option>
+                                <option value="flexible">Flexible</option>
+                            </select>
+                        </div>
+                    </aside>
+                    <main class="main-content">
+                        <div id="mentor-results"></div>
+                    </main>
+                </div>
+            </div>
+
+            <!-- My Learning Tab -->
+            <div id="learning-tab" class="tab-content">
+                <div class="learning-sections">
+                    <section class="learning-section">
+                        <h3>Active Sessions</h3>
+                        <div id="active-sessions"></div>
+                    </section>
+                    <section class="learning-section">
+                        <h3>Pending Requests</h3>
+                        <div id="pending-requests"></div>
+                    </section>
+                    <section class="learning-section">
+                        <h3>Past Sessions</h3>
+                        <div id="past-sessions"></div>
+                    </section>
+                    <section class="learning-section">
+                        <h3>Profile Completeness</h3>
+                        <div class="profile-completeness">
+                            <div class="completeness-items">
+                                <div class="completeness-item">
+                                    <span>📷 Add photo</span>
+                                    <span class="completeness-status" id="status-photo">0%</span>
+                                </div>
+                                <div class="completeness-item">
+                                    <span>✍️ Write bio</span>
+                                    <span class="completeness-status" id="status-bio">0%</span>
+                                </div>
+                                <div class="completeness-item">
+                                    <span>🎥 Record intro video</span>
+                                    <span class="completeness-status" id="status-video">0%</span>
+                                </div>
+                                <div class="completeness-item">
+                                    <span>✅ Get verified</span>
+                                    <span class="completeness-status" id="status-verified">0%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Page -->
+    <div id="profile-page" class="page">
+        <nav class="dashboard-nav">
+            <div class="nav-content">
+                <div class="logo" onclick="navigateTo('dashboard')">SkillSwap</div>
+                <div class="nav-right">
+                    <button class="btn btn--sm btn--outline" onclick="navigateTo('dashboard')">Back to Dashboard</button>
+                </div>
+            </div>
+        </nav>
+        <div class="container profile-container">
+            <div class="profile-header">
+                <div class="profile-avatar-large" id="profile-avatar-large">U</div>
+                <div class="profile-info">
+                    <h2 id="profile-name">User Name</h2>
+                    <p id="profile-details">Student • JECRC</p>
+                    <p id="profile-bio">Bio goes here...</p>
+                </div>
+            </div>
+            <div class="profile-sections">
+                <section class="profile-section">
+                    <h3>Skills I Teach</h3>
+                    <div id="teach-skills-list"></div>
+                    <button class="btn btn--sm btn--outline" onclick="showAddSkillModal('teach')">+ Add Skill</button>
+                </section>
+                <section class="profile-section">
+                    <h3>Skills I Want to Learn</h3>
+                    <div id="learn-skills-list"></div>
+                    <button class="btn btn--sm btn--outline" onclick="showAddSkillModal('learn')">+ Add Skill</button>
+                </section>
+                <section class="profile-section">
+                    <h3>Badges</h3>
+                    <div class="badges-container" id="badges-container"></div>
+                </section>
+                <section class="profile-section">
+                    <h3>Reputation</h3>
+                    <div class="reputation-card">
+                        <div class="reputation-item">
+                            <span class="reputation-label">Helpful rate:</span>
+                            <span id="profile-helpful-rate">--</span>
+                        </div>
+                        <div class="reputation-item">
+                            <span class="reputation-label">Completion rate:</span>
+                            <span id="profile-completion-rate">--</span>
+                        </div>
+                        <div class="reputation-item">
+                            <span class="reputation-label">Response time:</span>
+                            <span id="profile-response-time">Avg 45 min</span>
+                        </div>
+                        <div class="reputation-item">
+                            <span class="reputation-label">Last active:</span>
+                            <span id="profile-last-active">Active now</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- Credits Ledger Page -->
+    <div id="credits-page" class="page">
+        <nav class="dashboard-nav">
+            <div class="nav-content">
+                <div class="logo" onclick="navigateTo('dashboard')">SkillSwap</div>
+                <div class="nav-right">
+                    <button class="btn btn--sm btn--outline" onclick="navigateTo('dashboard')">Back to Dashboard</button>
+                </div>
+            </div>
+        </nav>
+        <div class="container">
+            <h2>Credit Ledger</h2>
+            <div class="credits-summary">
+                <div class="credit-balance-card">
+                    <span class="balance-label">Current Balance</span>
+                    <span class="balance-value" id="ledger-balance">10</span>
+                </div>
+            </div>
+            <div class="ledger-list" id="ledger-list"></div>
+        </div>
+    </div>
+
+    <!-- Campus Hub Page -->
+    <div id="campus-page" class="page">
+        <nav class="dashboard-nav">
+            <div class="nav-content">
+                <div class="logo" onclick="navigateTo('dashboard')">SkillSwap</div>
+                <div class="nav-right">
+                    <button class="btn btn--sm btn--outline" onclick="navigateTo('dashboard')">Back to Dashboard</button>
+                </div>
+            </div>
+        </nav>
+        <div class="container">
+            <h2>Campus Hub</h2>
+            <div class="form-group" style="max-width: 400px; margin-bottom: 32px;">
+                <label class="form-label">Select Campus</label>
+                <select class="form-control" id="campus-select" onchange="loadCampusData()">
+                    <option value="">Choose your campus</option>
+                    <option value="JECRC">JECRC, Jaipur</option>
+                    <option value="BITS Pilani">BITS Pilani, Goa</option>
+                    <option value="Delhi University">Delhi University</option>
+                </select>
+            </div>
+            <div id="campus-content" style="display: none;">
+                <div class="campus-sections">
+                    <section class="campus-section">
+                        <h3>🏆 Top Teachers (Last 7 Days)</h3>
+                        <div id="top-teachers-list"></div>
+                    </section>
+                    <section class="campus-section">
+                        <h3>📈 Most Requested Skills</h3>
+                        <div id="top-skills-list"></div>
+                    </section>
+                    <section class="campus-section">
+                        <h3>🔥 Rising Skills This Week</h3>
+                        <div id="rising-skills-list"></div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Page -->
+    <div id="admin-page" class="page">
+        <nav class="dashboard-nav">
+            <div class="nav-content">
+                <div class="logo">SkillSwap Admin</div>
+                <div class="nav-right">
+                    <button class="btn btn--sm btn--outline" onclick="navigateTo('dashboard')">Back to Dashboard</button>
+                </div>
+            </div>
+        </nav>
+        <div class="container">
+            <h2>Admin Dashboard</h2>
+            <div class="admin-stats">
+                <div class="stat-card">
+                    <span class="stat-value" id="admin-total-users">0</span>
+                    <span class="stat-label">Total Users</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="admin-total-sessions">0</span>
+                    <span class="stat-label">Sessions This Week</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="admin-total-credits">0</span>
+                    <span class="stat-label">Credits Exchanged</span>
+                </div>
+            </div>
+            <section class="admin-section">
+                <h3>Feature Flags</h3>
+                <div class="feature-flags">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="flag-group-sessions" onchange="toggleFeatureFlag('group-sessions')">
+                        Enable group sessions
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="flag-video-intro" onchange="toggleFeatureFlag('video-intro')">
+                        Require video intro
+                    </label>
+                </div>
+            </section>
+            <section class="admin-section">
+                <h3>Skills Taxonomy</h3>
+                <div id="skills-taxonomy-list"></div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Request Session Modal -->
+    <div id="request-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Request Session</h3>
+                <button class="modal-close" onclick="closeModal('request-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="request-step-1" class="request-step">
+                    <div class="form-group">
+                        <label class="form-label">Skill</label>
+                        <input type="text" class="form-control" id="request-skill" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Mentor</label>
+                        <input type="text" class="form-control" id="request-mentor" readonly>
+                    </div>
+                    <button class="btn btn--primary" onclick="showRequestStep(2)">Next</button>
+                </div>
+                <div id="request-step-2" class="request-step" style="display: none;">
+                    <h4>Propose 3 Time Slots</h4>
+                    <p class="help-text">Mentor typically responds within 2 hours</p>
+                    <div class="form-group">
+                        <label class="form-label">Slot 1</label>
+                        <input type="datetime-local" class="form-control" id="slot-1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Slot 2</label>
+                        <input type="datetime-local" class="form-control" id="slot-2">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Slot 3</label>
+                        <input type="datetime-local" class="form-control" id="slot-3">
+                    </div>
+                    <div class="button-group">
+                        <button class="btn btn--outline" onclick="showRequestStep(1)">Back</button>
+                        <button class="btn btn--primary" onclick="showRequestStep(3)">Next</button>
+                    </div>
+                </div>
+                <div id="request-step-3" class="request-step" style="display: none;">
+                    <h4>Review &amp; Confirm</h4>
+                    <div class="review-details">
+                        <p><strong>Skill:</strong> <span id="review-skill"></span></p>
+                        <p><strong>Mentor:</strong> <span id="review-mentor"></span></p>
+                        <p><strong>Proposed slots:</strong></p>
+                        <ul id="review-slots"></ul>
+                        <div class="cost-info">
+                            <strong>Cost:</strong> <span class="credit-cost">1 credit</span>
+                        </div>
+                    </div>
+                    <div class="button-group">
+                        <button class="btn btn--outline" onclick="showRequestStep(2)">Back</button>
+                        <button class="btn btn--primary" onclick="submitSessionRequest()">Send Request</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feedback Modal -->
+    <div id="feedback-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Session Feedback</h3>
+                <button class="modal-close" onclick="closeModal('feedback-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h4>Was this session helpful?</h4>
+                <div class="feedback-buttons">
+                    <button class="btn btn--lg" onclick="submitFeedback(true)">👍 Yes</button>
+                    <button class="btn btn--lg" onclick="submitFeedback(false)">👎 No</button>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Add a note (optional, 200 chars max)</label>
+                    <textarea class="form-control" id="feedback-comment" maxlength="200" rows="3"></textarea>
+                </div>
+                <p class="help-text">Credit will transfer automatically after feedback</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
