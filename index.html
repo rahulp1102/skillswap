@@ -7,10 +7,8 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Toast Notification Container -->
     <div id="toast-container"></div>
 
-    <!-- Landing Page -->
     <div id="landing-page" class="page active">
         <nav class="landing-nav">
             <div class="container">
@@ -36,7 +34,8 @@
         <section class="skills-directory">
             <div class="container">
                 <h2>Trending Skills</h2>
-                <div class="skill-chips" id="trending-skills"></div>
+                <div class="skill-chips" id="trending-skills">
+                    </div>
                 
                 <div class="rising-section">
                     <h3>Rising this week 📈</h3>
@@ -81,7 +80,6 @@
         </section>
     </div>
 
-    <!-- Sign In Page -->
     <div id="signin-page" class="page">
         <div class="auth-container">
             <div class="auth-card">
@@ -96,17 +94,10 @@
                     </svg>
                     Sign in with Google
                 </button>
-                <div class="demo-accounts">
-                    <p><strong>Demo Test Accounts:</strong></p>
-                    <button class="btn btn--sm btn--outline" onclick="demoLogin('learner@test.com')">Learner Demo</button>
-                    <button class="btn btn--sm btn--outline" onclick="demoLogin('mentor@test.com')">Mentor Demo</button>
-                    <button class="btn btn--sm btn--outline" onclick="demoLogin('admin@test.com')">Admin Demo</button>
-                </div>
             </div>
         </div>
     </div>
 
-    <!-- Role Selection Page -->
     <div id="role-selection-page" class="page">
         <div class="auth-container">
             <div class="auth-card">
@@ -128,7 +119,6 @@
         </div>
     </div>
 
-    <!-- Onboarding Page -->
     <div id="onboarding-page" class="page">
         <div class="auth-container">
             <div class="auth-card onboarding-card">
@@ -167,10 +157,6 @@
                             <label class="form-label">CGPA (Optional)</label>
                             <input type="number" class="form-control" id="onboarding-cgpa" step="0.1" min="0" max="10">
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">Campus Invite Code (Optional)</label>
-                            <input type="text" class="form-control" id="onboarding-invite" placeholder="e.g., JECRC2025">
-                        </div>
                     </div>
                     <div id="professional-fields" style="display: none;">
                         <div class="form-group">
@@ -192,7 +178,6 @@
         </div>
     </div>
 
-    <!-- Main Dashboard -->
     <div id="dashboard-page" class="page">
         <nav class="dashboard-nav">
             <div class="nav-content">
@@ -203,7 +188,7 @@
                 <div class="nav-right">
                     <div class="credits-display" onclick="navigateTo('credits')">
                         <span class="credits-label">Credits:</span>
-                        <span class="credits-value" id="credits-value">10/10</span>
+                        <span class="credits-value" id="credits-value">--</span>
                     </div>
                     <div class="user-menu">
                         <button class="user-avatar" onclick="toggleUserMenu()" id="user-avatar">U</button>
@@ -224,7 +209,6 @@
                 <button class="tab" onclick="switchTab('learning')">My Learning</button>
             </div>
 
-            <!-- Discover Mentors Tab -->
             <div id="discover-tab" class="tab-content active">
                 <div class="content-layout">
                     <aside class="filters-sidebar">
@@ -251,15 +235,6 @@
                                 Verified only
                             </label>
                         </div>
-                        <div class="filter-group">
-                            <label class="form-label">Availability</label>
-                            <select class="form-control" id="filter-availability" onchange="applyFilters()">
-                                <option value="all">Any time</option>
-                                <option value="week">Next 7 days</option>
-                                <option value="weekend">This weekend</option>
-                                <option value="flexible">Flexible</option>
-                            </select>
-                        </div>
                     </aside>
                     <main class="main-content">
                         <div id="mentor-results"></div>
@@ -267,7 +242,6 @@
                 </div>
             </div>
 
-            <!-- My Learning Tab -->
             <div id="learning-tab" class="tab-content">
                 <div class="learning-sections">
                     <section class="learning-section">
@@ -310,7 +284,6 @@
         </div>
     </div>
 
-    <!-- Profile Page -->
     <div id="profile-page" class="page">
         <nav class="dashboard-nav">
             <div class="nav-content">
@@ -355,21 +328,12 @@
                             <span class="reputation-label">Completion rate:</span>
                             <span id="profile-completion-rate">--</span>
                         </div>
-                        <div class="reputation-item">
-                            <span class="reputation-label">Response time:</span>
-                            <span id="profile-response-time">Avg 45 min</span>
-                        </div>
-                        <div class="reputation-item">
-                            <span class="reputation-label">Last active:</span>
-                            <span id="profile-last-active">Active now</span>
-                        </div>
                     </div>
                 </section>
             </div>
         </div>
     </div>
 
-    <!-- Credits Ledger Page -->
     <div id="credits-page" class="page">
         <nav class="dashboard-nav">
             <div class="nav-content">
@@ -384,14 +348,13 @@
             <div class="credits-summary">
                 <div class="credit-balance-card">
                     <span class="balance-label">Current Balance</span>
-                    <span class="balance-value" id="ledger-balance">10</span>
+                    <span class="balance-value" id="ledger-balance">--</span>
                 </div>
             </div>
             <div class="ledger-list" id="ledger-list"></div>
         </div>
     </div>
 
-    <!-- Campus Hub Page -->
     <div id="campus-page" class="page">
         <nav class="dashboard-nav">
             <div class="nav-content">
@@ -415,7 +378,7 @@
             <div id="campus-content" style="display: none;">
                 <div class="campus-sections">
                     <section class="campus-section">
-                        <h3>🏆 Top Teachers (Last 7 Days)</h3>
+                        <h3>🏆 Top Teachers</h3>
                         <div id="top-teachers-list"></div>
                     </section>
                     <section class="campus-section">
@@ -431,7 +394,6 @@
         </div>
     </div>
 
-    <!-- Admin Page -->
     <div id="admin-page" class="page">
         <nav class="dashboard-nav">
             <div class="nav-content">
@@ -450,11 +412,7 @@
                 </div>
                 <div class="stat-card">
                     <span class="stat-value" id="admin-total-sessions">0</span>
-                    <span class="stat-label">Sessions This Week</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-value" id="admin-total-credits">0</span>
-                    <span class="stat-label">Credits Exchanged</span>
+                    <span class="stat-label">Total Sessions</span>
                 </div>
             </div>
             <section class="admin-section">
@@ -464,20 +422,11 @@
                         <input type="checkbox" id="flag-group-sessions" onchange="toggleFeatureFlag('group-sessions')">
                         Enable group sessions
                     </label>
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="flag-video-intro" onchange="toggleFeatureFlag('video-intro')">
-                        Require video intro
-                    </label>
                 </div>
-            </section>
-            <section class="admin-section">
-                <h3>Skills Taxonomy</h3>
-                <div id="skills-taxonomy-list"></div>
             </section>
         </div>
     </div>
 
-    <!-- Request Session Modal -->
     <div id="request-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -536,7 +485,6 @@
         </div>
     </div>
 
-    <!-- Feedback Modal -->
     <div id="feedback-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -558,6 +506,52 @@
         </div>
     </div>
 
-    <script src="app.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, getDocs, query, where, arrayUnion, runTransaction, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // ====================================================
+        // YOUR SPECIFIC KEYS 
+        // ====================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyCMpk5XJYxY3USPq2xystEkR2p-BAAK7U4",
+            authDomain: "skillswap-prod.firebaseapp.com",
+            projectId: "skillswap-prod",
+            storageBucket: "skillswap-prod.firebasestorage.app",
+            messagingSenderId: "391137988764",
+            appId: "1:391137988764:web:5a084c8465b5ac4c56dd59",
+            measurementId: "G-EM4NK434ZM"
+        };
+        // ====================================================
+
+        const app = initializeApp(firebaseConfig);
+        
+        // Export to window so app.js can use them
+        window.auth = getAuth(app);
+        window.db = getFirestore(app);
+        window.googleProvider = new GoogleAuthProvider();
+        
+        // Export helper functions to window
+        window.signInWithPopup = signInWithPopup;
+        window.signOut = signOut;
+        window.onAuthStateChanged = onAuthStateChanged;
+        window.doc = doc;
+        window.getDoc = getDoc;
+        window.setDoc = setDoc;
+        window.updateDoc = updateDoc;
+        window.collection = collection;
+        window.addDoc = addDoc;
+        window.getDocs = getDocs;
+        window.query = query;
+        window.where = where;
+        window.arrayUnion = arrayUnion;
+        window.runTransaction = runTransaction;
+        window.onSnapshot = onSnapshot;
+
+        console.log("Firebase initialized with your keys!");
+    </script>
+
+    <script type="module" src="app.js"></script>
 </body>
 </html>

@@ -7,305 +7,79 @@ const appState = {
   filters: {
     campus: 'all',
     proficiency: 0,
-    verified: false,
-    availability: 'all'
+    verified: false
   },
   currentRequest: null,
-  users: [],
-  skills: [],
-  sessions: [],
-  creditTransactions: [],
-  featureFlags: {
-    groupSessions: false,
-    videoIntro: false
-  }
+  // Static data for landing page visuals
+  allSkills: [
+    { name: 'Python', trend: '↑ 12%' },
+    { name: 'UI/UX Design', trend: '↑ 8%' },
+    { name: 'React', trend: '↑ 5%' },
+    { name: 'DSA', trend: '↑ 15%' },
+    { name: 'JavaScript', trend: '↑ 11%' }
+  ]
 };
 
-// ==================== MOCK DATA INITIALIZATION ====================
-function initializeMockData() {
-  // Initialize skills
-  appState.skills = [
-    { name: 'Python', popularity: 340, trend: '↑ 12%' },
-    { name: 'UI/UX Design', popularity: 280, trend: '↑ 8%' },
-    { name: 'Data Science', popularity: 265, trend: '↑ 18%' },
-    { name: 'React', popularity: 245, trend: '↑ 5%' },
-    { name: 'Git', popularity: 198, trend: '↓ 2%' },
-    { name: 'Web Development', popularity: 220, trend: '↑ 9%' },
-    { name: 'DSA', popularity: 210, trend: '↑ 15%' },
-    { name: 'Aptitude', popularity: 185, trend: '↑ 7%' },
-    { name: 'JavaScript', popularity: 230, trend: '↑ 11%' },
-    { name: 'Machine Learning', popularity: 195, trend: '↑ 14%' },
-    { name: 'Figma', popularity: 175, trend: '↑ 6%' },
-    { name: 'SQL', popularity: 160, trend: '↑ 4%' },
-    { name: 'Java', popularity: 205, trend: '↑ 3%' },
-    { name: 'Statistics', popularity: 140, trend: '↑ 9%' },
-    { name: 'Node.js', popularity: 155, trend: '↑ 8%' }
-  ];
+// ==================== AUTHENTICATION ====================
 
-  // Initialize users
-  appState.users = [
-    {
-      id: 'user_1',
-      name: 'Rahul Sharma',
-      email: 'learner@test.com',
-      role: 'student',
-      college: 'JECRC',
-      year: 3,
-      cgpa: 8.2,
-      campus: 'Jaipur',
-      bio: 'CSE student passionate about web dev and open source',
-      teachSkills: [
-        { skill: 'Python', level: 4, verified: true },
-        { skill: 'Git', level: 3, verified: false }
-      ],
-      learnSkills: [
-        { skill: 'UI/UX Design', priority: 'High' },
-        { skill: 'React', priority: 'Medium' }
-      ],
-      creditsBalance: 4,
-      helpfulRate: 0.92,
-      completionRate: 0.98,
-      badges: ['Verified Campus', '10+ hours taught'],
-      availability: 'Weekends, 4-8pm IST',
-      lastActive: new Date()
-    },
-    {
-      id: 'user_2',
-      name: 'Asha Patel',
-      email: 'mentor@test.com',
-      role: 'student',
-      college: 'BITS Pilani',
-      year: 4,
-      cgpa: 8.8,
-      campus: 'Goa',
-      bio: 'UI/UX designer, love teaching design fundamentals',
-      teachSkills: [
-        { skill: 'UI/UX Design', level: 5, verified: true },
-        { skill: 'Figma', level: 5, verified: true }
-      ],
-      learnSkills: [
-        { skill: 'Data Science', priority: 'High' }
-      ],
-      creditsBalance: 8,
-      helpfulRate: 0.96,
-      completionRate: 0.99,
-      badges: ['Verified Campus', '10+ hours taught', '90% helpful'],
-      availability: 'Flexible, Mon-Fri evenings',
-      lastActive: new Date()
-    },
-    {
-      id: 'user_3',
-      name: 'Priya Singh',
-      email: 'user3@test.com',
-      role: 'student',
-      college: 'Delhi University',
-      year: 2,
-      campus: 'Delhi',
-      bio: 'Data Science enthusiast, love statistics',
-      teachSkills: [
-        { skill: 'Statistics', level: 4, verified: false }
-      ],
-      learnSkills: [
-        { skill: 'Python', priority: 'High' }
-      ],
-      creditsBalance: 6,
-      helpfulRate: 0.88,
-      completionRate: 0.95,
-      badges: ['Verified Campus'],
-      availability: 'Weekends only',
-      lastActive: new Date()
+// Listen for auth state changes
+document.addEventListener('DOMContentLoaded', () => {
+  // Wait for Firebase to load from index.html
+  setTimeout(() => {
+    if (window.onAuthStateChanged) {
+      window.onAuthStateChanged(window.auth, async (user) => {
+        if (user) {
+          // User is signed in, fetch their profile
+          try {
+            const userDoc = await window.getDoc(window.doc(window.db, "users", user.uid));
+            
+            if (userDoc.exists()) {
+              // Existing user
+              appState.currentUser = userDoc.data();
+              showToast(`Welcome back, ${appState.currentUser.name}!`, 'success');
+              
+              if (user.email === 'admin@test.com') {
+                navigateTo('admin');
+              } else {
+                navigateTo('dashboard');
+              }
+            } else {
+              // New user - needs onboarding
+              navigateTo('role');
+            }
+          } catch (e) {
+            console.error("Auth Error:", e);
+          }
+        } else {
+          // User is signed out
+          appState.currentUser = null;
+          navigateTo('landing');
+          renderLandingPage();
+        }
+      });
+    } else {
+      console.error("Firebase not found. Check index.html keys.");
     }
-  ];
+  }, 1000);
+});
 
-  // Add more diverse users
-  const additionalUsers = [
-    {
-      id: 'user_4',
-      name: 'Arun Kachhawa',
-      email: 'user4@test.com',
-      role: 'student',
-      college: 'JECRC',
-      year: 3,
-      campus: 'Jaipur',
-      bio: 'Competitive programmer, teaching DSA',
-      teachSkills: [
-        { skill: 'DSA', level: 5, verified: true },
-        { skill: 'Java', level: 4, verified: true }
-      ],
-      learnSkills: [
-        { skill: 'Machine Learning', priority: 'High' }
-      ],
-      creditsBalance: 12,
-      helpfulRate: 0.94,
-      completionRate: 0.97,
-      badges: ['Verified Campus', '10+ hours taught', '90% helpful'],
-      availability: 'Flexible timing',
-      lastActive: new Date()
-    },
-    {
-      id: 'user_5',
-      name: 'Kumkum Tripathi',
-      email: 'user5@test.com',
-      role: 'student',
-      college: 'JECRC',
-      year: 2,
-      campus: 'Jaipur',
-      bio: 'Web dev enthusiast',
-      teachSkills: [
-        { skill: 'Web Development', level: 5, verified: true },
-        { skill: 'JavaScript', level: 5, verified: false }
-      ],
-      learnSkills: [
-        { skill: 'React', priority: 'High' }
-      ],
-      creditsBalance: 7,
-      helpfulRate: 0.91,
-      completionRate: 0.96,
-      badges: ['Verified Campus', '10+ hours taught'],
-      availability: 'Evening slots',
-      lastActive: new Date()
-    },
-    {
-      id: 'user_6',
-      name: 'Priyanka Rathore',
-      email: 'user6@test.com',
-      role: 'student',
-      college: 'JECRC',
-      year: 4,
-      campus: 'Jaipur',
-      bio: 'Full stack developer',
-      teachSkills: [
-        { skill: 'React', level: 5, verified: true },
-        { skill: 'Node.js', level: 5, verified: true }
-      ],
-      learnSkills: [
-        { skill: 'Data Science', priority: 'Medium' }
-      ],
-      creditsBalance: 9,
-      helpfulRate: 0.93,
-      completionRate: 0.98,
-      badges: ['Verified Campus', '10+ hours taught', '90% helpful'],
-      availability: 'Weekends, flexible',
-      lastActive: new Date()
-    },
-    {
-      id: 'user_7',
-      name: 'Rahul Purohit',
-      email: 'user7@test.com',
-      role: 'student',
-      college: 'JECRC',
-      year: 4,
-      campus: 'Jaipur',
-      bio: 'ML researcher',
-      teachSkills: [
-        { skill: 'Machine Learning', level: 5, verified: true },
-        { skill: 'Python', level: 5, verified: true }
-      ],
-      learnSkills: [
-        { skill: 'Statistics', priority: 'Low' }
-      ],
-      creditsBalance: 11,
-      helpfulRate: 0.95,
-      completionRate: 0.99,
-      badges: ['Verified Campus', '10+ hours taught', '90% helpful', '7-day streak'],
-      availability: 'Flexible',
-      lastActive: new Date()
-    },
-    {
-      id: 'user_8',
-      name: 'Vikram Singh',
-      email: 'user8@test.com',
-      role: 'student',
-      college: 'Delhi University',
-      year: 1,
-      campus: 'Delhi',
-      bio: 'New to programming',
-      teachSkills: [],
-      learnSkills: [
-        { skill: 'Python', priority: 'High' },
-        { skill: 'Git', priority: 'Medium' }
-      ],
-      creditsBalance: 10,
-      helpfulRate: 0,
-      completionRate: 0,
-      badges: [],
-      availability: 'Weekends',
-      lastActive: new Date()
-    }
-  ];
+async function handleGoogleSignIn() {
+  try {
+    showToast('Redirecting to Google...', 'success');
+    await window.signInWithPopup(window.auth, window.googleProvider);
+  } catch (error) {
+    console.error(error);
+    showToast('Login failed: ' + error.message, 'error');
+  }
+}
 
-  appState.users = appState.users.concat(additionalUsers);
-
-  // Initialize sessions
-  appState.sessions = [
-    {
-      id: 'req_001',
-      learnerId: 'user_1',
-      teacherId: 'user_2',
-      skill: 'UI/UX Design',
-      status: 'completed',
-      proposedSlots: [
-        new Date('2025-11-04T14:00:00'),
-        new Date('2025-11-05T15:00:00'),
-        new Date('2025-11-06T16:00:00')
-      ],
-      chosenSlot: new Date('2025-11-04T14:00:00'),
-      meetLink: 'https://meet.jitsi.org/skillswap_req_001',
-      feedback: {
-        helpful: true,
-        comment: 'Asha explained everything so clearly!'
-      },
-      completedAt: new Date('2025-11-04T15:00:00')
-    },
-    {
-      id: 'req_002',
-      learnerId: 'user_1',
-      teacherId: 'user_4',
-      skill: 'DSA',
-      status: 'active',
-      proposedSlots: [
-        new Date('2025-11-05T10:00:00'),
-        new Date('2025-11-05T14:00:00'),
-        new Date('2025-11-06T10:00:00')
-      ],
-      chosenSlot: new Date('2025-11-05T10:00:00'),
-      meetLink: 'https://meet.jitsi.org/skillswap_req_002'
-    },
-    {
-      id: 'req_003',
-      learnerId: 'user_1',
-      teacherId: 'user_6',
-      skill: 'React',
-      status: 'pending',
-      proposedSlots: [
-        new Date('2025-11-06T15:00:00'),
-        new Date('2025-11-07T10:00:00'),
-        new Date('2025-11-07T16:00:00')
-      ]
-    }
-  ];
-
-  // Initialize credit transactions
-  appState.creditTransactions = [
-    {
-      id: 'tx_001',
-      userId: 'user_1',
-      amount: -1,
-      type: 'spent',
-      description: 'Learned UI/UX Design from Asha',
-      sessionId: 'req_001',
-      timestamp: new Date('2025-11-04T15:00:00')
-    },
-    {
-      id: 'tx_002',
-      userId: 'user_2',
-      amount: 1,
-      type: 'earned',
-      description: 'Taught UI/UX Design to Rahul',
-      sessionId: 'req_001',
-      timestamp: new Date('2025-11-04T15:00:00')
-    }
-  ];
+async function handleLogout() {
+  try {
+    await window.signOut(window.auth);
+    showToast('Logged out successfully', 'success');
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 // ==================== NAVIGATION ====================
@@ -330,49 +104,26 @@ function navigateTo(pageName) {
     appState.currentPage = pageName;
     
     // Load page-specific data
-    if (pageName === 'dashboard') {
-      loadDashboard();
-    } else if (pageName === 'profile') {
-      loadProfile();
-    } else if (pageName === 'credits') {
-      loadCreditsLedger();
-    } else if (pageName === 'admin') {
-      loadAdminDashboard();
-    }
+    if (pageName === 'dashboard') loadDashboard();
+    if (pageName === 'profile') loadProfile();
+    if (pageName === 'credits') loadCreditsLedger();
+    if (pageName === 'admin') loadAdminDashboard();
+    if (pageName === 'landing') renderLandingPage();
   }
 }
 
-// ==================== AUTHENTICATION ====================
-function handleGoogleSignIn() {
-  showToast('Redirecting to Google Sign In...', 'success');
-  setTimeout(() => {
-    navigateTo('role');
-  }, 1000);
-}
-
-function demoLogin(email) {
-  const user = appState.users.find(u => u.email === email);
-  
-  if (user) {
-    appState.currentUser = user;
-    showToast(`Welcome back, ${user.name}!`, 'success');
-    
-    if (email === 'admin@test.com') {
-      navigateTo('admin');
-    } else {
-      navigateTo('dashboard');
-    }
-  } else {
-    // New user
-    showToast('Please complete your profile', 'success');
-    navigateTo('role');
-  }
-}
-
+// ==================== ONBOARDING ====================
 function selectRole(role) {
   appState.onboardingRole = role;
   navigateTo('onboarding');
   
+  // Pre-fill email/name from Google Auth if available
+  const authUser = window.auth.currentUser;
+  if (authUser) {
+    document.getElementById('onboarding-email').value = authUser.email;
+    document.getElementById('onboarding-name').value = authUser.displayName;
+  }
+
   // Show appropriate fields
   if (role === 'student') {
     document.getElementById('student-fields').style.display = 'block';
@@ -383,198 +134,121 @@ function selectRole(role) {
   }
 }
 
-function handleLogout() {
-  appState.currentUser = null;
-  showToast('Logged out successfully', 'success');
-  navigateTo('landing');
-}
-
-// ==================== ONBOARDING ====================
+// Attach listener to onboarding form
 document.addEventListener('DOMContentLoaded', () => {
   const onboardingForm = document.getElementById('onboarding-form');
   if (onboardingForm) {
-    onboardingForm.addEventListener('submit', (e) => {
+    onboardingForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      completeOnboarding();
+      await completeOnboarding();
     });
   }
 });
 
-function completeOnboarding() {
-  const name = document.getElementById('onboarding-name').value;
-  const email = document.getElementById('onboarding-email').value;
-  
+async function completeOnboarding() {
+  const authUser = window.auth.currentUser;
+  if (!authUser) return;
+
   const newUser = {
-    id: `user_${Date.now()}`,
-    name,
-    email,
+    id: authUser.uid,
+    name: document.getElementById('onboarding-name').value,
+    email: authUser.email,
     role: appState.onboardingRole,
-    bio: '',
+    bio: 'New member',
     teachSkills: [],
     learnSkills: [],
-    creditsBalance: 10,
+    creditsBalance: 5, // Sign-up bonus
     helpfulRate: 0,
     completionRate: 0,
-    badges: [],
-    availability: 'Flexible',
-    lastActive: new Date()
+    badges: ['New Member'],
+    lastActive: new Date().toISOString()
   };
   
   if (appState.onboardingRole === 'student') {
     newUser.college = document.getElementById('onboarding-college').value;
-    newUser.year = parseInt(document.getElementById('onboarding-year').value);
-    newUser.cgpa = parseFloat(document.getElementById('onboarding-cgpa').value) || null;
     newUser.campus = newUser.college;
   } else {
-    newUser.currentRole = document.getElementById('onboarding-role').value;
     newUser.company = document.getElementById('onboarding-company').value;
-    newUser.experience = parseInt(document.getElementById('onboarding-experience').value) || null;
     newUser.campus = 'Professional';
   }
   
-  appState.users.push(newUser);
-  appState.currentUser = newUser;
-  
-  showToast('Profile created successfully!', 'success');
-  navigateTo('dashboard');
+  try {
+    await window.setDoc(window.doc(window.db, "users", authUser.uid), newUser);
+    appState.currentUser = newUser;
+    showToast('Profile created! +5 Credits bonus.', 'success');
+    navigateTo('dashboard');
+  } catch (error) {
+    console.error(error);
+    showToast('Error creating profile', 'error');
+  }
 }
 
-// ==================== DASHBOARD ====================
-function loadDashboard() {
-  if (!appState.currentUser) {
-    navigateTo('signin');
-    return;
-  }
+// ==================== DASHBOARD & DISCOVERY ====================
+async function loadDashboard() {
+  if (!appState.currentUser) return;
   
-  // Update credits display
-  document.getElementById('credits-value').textContent = 
-    `${appState.currentUser.creditsBalance}/10`;
+  // Real-time listener for credits updates
+  window.onSnapshot(window.doc(window.db, "users", appState.currentUser.id), (doc) => {
+    if(doc.exists()) {
+      appState.currentUser = doc.data();
+      document.getElementById('credits-value').textContent = `${appState.currentUser.creditsBalance}`;
+    }
+  });
+
+  document.getElementById('user-avatar').textContent = appState.currentUser.name.charAt(0).toUpperCase();
   
-  // Update user avatar
-  const avatar = document.getElementById('user-avatar');
-  avatar.textContent = appState.currentUser.name.charAt(0).toUpperCase();
-  
-  // Load mentor results
   loadMentorResults();
-  
-  // Load learning tab
   loadLearningTab();
 }
 
-function switchTab(tabName) {
-  // Update tab buttons
-  document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-  event.target.classList.add('active');
-  
-  // Update tab content
-  document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-  document.getElementById(`${tabName}-tab`).classList.add('active');
-}
-
-function toggleUserMenu() {
-  const dropdown = document.getElementById('user-dropdown');
-  dropdown.classList.toggle('active');
-}
-
-// ==================== MENTOR DISCOVERY ====================
-function loadMentorResults() {
-  const query = appState.searchQuery || document.getElementById('dashboard-search').value.toLowerCase();
+async function loadMentorResults() {
+  const queryText = appState.searchQuery || document.getElementById('dashboard-search').value.toLowerCase();
   const resultsContainer = document.getElementById('mentor-results');
-  
-  // Find mentors who teach the searched skill
-  let mentors = appState.users.filter(user => {
-    if (user.id === appState.currentUser.id) return false;
+  resultsContainer.innerHTML = '<div class="loading">Loading mentors...</div>';
+
+  try {
+    // Fetch all users
+    const q = window.query(window.collection(window.db, "users"));
+    const snapshot = await window.getDocs(q);
     
-    if (query) {
-      return user.teachSkills.some(ts => 
-        ts.skill.toLowerCase().includes(query)
-      );
+    let mentors = [];
+    snapshot.forEach(doc => {
+      const user = doc.data();
+      // Filter out self and users who aren't teaching anything
+      if (user.id !== appState.currentUser.id && user.teachSkills && user.teachSkills.length > 0) {
+        mentors.push(user);
+      }
+    });
+
+    // Client-side filtering logic
+    if (queryText) {
+      mentors = mentors.filter(m => m.teachSkills.some(ts => ts.skill.toLowerCase().includes(queryText)));
     }
-    return user.teachSkills.length > 0;
-  });
-  
-  // Apply filters
-  mentors = applyFiltersToMentors(mentors);
-  
-  // Calculate matching scores and sort
-  mentors = mentors.map(mentor => {
-    const score = calculateMatchingScore(mentor, query);
-    return { ...mentor, matchScore: score };
-  }).sort((a, b) => b.matchScore - a.matchScore);
-  
-  if (mentors.length === 0) {
-    resultsContainer.innerHTML = `
-      <div class="empty-state">
-        <h3>No mentors found</h3>
-        <p>No ${query || 'mentors'} at your campus yet. Try expanding to 'All campuses' or post a group request.</p>
-      </div>
-    `;
-    return;
+
+    if (appState.filters.campus === 'same') {
+      mentors = mentors.filter(m => m.campus === appState.currentUser.campus);
+    }
+    
+    if (appState.filters.verified) {
+        mentors = mentors.filter(m => m.badges && m.badges.includes('Verified Campus'));
+    }
+
+    if (mentors.length === 0) {
+      resultsContainer.innerHTML = `<div class="empty-state"><h3>No mentors found</h3><p>Try running seedDatabase() in console if this is a fresh install.</p></div>`;
+      return;
+    }
+
+    resultsContainer.innerHTML = mentors.map(renderMentorCard).join('');
+  } catch (error) {
+    console.error(error);
+    resultsContainer.innerHTML = '<div class="empty-state">Error loading mentors</div>';
   }
-  
-  resultsContainer.innerHTML = mentors.map(mentor => renderMentorCard(mentor, query)).join('');
 }
 
-function applyFiltersToMentors(mentors) {
-  const { campus, proficiency, verified, availability } = appState.filters;
-  
-  return mentors.filter(mentor => {
-    // Campus filter
-    if (campus === 'same' && mentor.campus !== appState.currentUser.campus) return false;
-    if (campus === 'other' && mentor.campus === appState.currentUser.campus) return false;
-    
-    // Proficiency filter
-    if (proficiency > 0) {
-      const hasRequiredLevel = mentor.teachSkills.some(ts => ts.level >= proficiency);
-      if (!hasRequiredLevel) return false;
-    }
-    
-    // Verified filter
-    if (verified) {
-      const hasVerified = mentor.teachSkills.some(ts => ts.verified);
-      if (!hasVerified) return false;
-    }
-    
-    return true;
-  });
-}
-
-function calculateMatchingScore(mentor, skillQuery) {
-  let proficiencyScore = 0;
-  let availabilityScore = 0.2;
-  let campusScore = mentor.campus === appState.currentUser.campus ? 0.15 : 0;
-  let qualityScore = mentor.helpfulRate * 0.15;
-  let activityScore = 0.1; // Simplified
-  
-  // Find proficiency for queried skill
-  if (skillQuery) {
-    const skill = mentor.teachSkills.find(ts => 
-      ts.skill.toLowerCase().includes(skillQuery)
-    );
-    if (skill) {
-      proficiencyScore = (skill.level / 5) * 0.4;
-    }
-  } else {
-    // Average proficiency
-    const avgLevel = mentor.teachSkills.reduce((sum, ts) => sum + ts.level, 0) / mentor.teachSkills.length;
-    proficiencyScore = (avgLevel / 5) * 0.4;
-  }
-  
-  return proficiencyScore + availabilityScore + campusScore + qualityScore + activityScore;
-}
-
-function renderMentorCard(mentor, skillQuery) {
+function renderMentorCard(mentor) {
   const initials = mentor.name.split(' ').map(n => n[0]).join('');
-  const skill = skillQuery ? 
-    mentor.teachSkills.find(ts => ts.skill.toLowerCase().includes(skillQuery)) :
-    mentor.teachSkills[0];
-  
-  const stars = '⭐'.repeat(skill?.level || 0);
-  
-  const matchReasons = [];
-  if (skill && skill.level >= 4) matchReasons.push('High proficiency');
-  if (mentor.campus === appState.currentUser.campus) matchReasons.push('Same campus');
-  if (mentor.helpfulRate > 0.9) matchReasons.push('Active this week');
+  const skill = mentor.teachSkills[0];
+  const stars = '⭐'.repeat(skill.level || 3);
   
   return `
     <div class="mentor-card">
@@ -587,603 +261,360 @@ function renderMentorCard(mentor, skillQuery) {
       </div>
       <div class="mentor-details">
         <div class="skill-level">
-          <strong>${skill?.skill || 'Multiple skills'}</strong>
+          <strong>${skill?.skill || 'General'}</strong>
           <span class="stars">${stars}</span>
         </div>
-        <div class="availability">📅 ${mentor.availability}</div>
-        ${matchReasons.length > 0 ? `<div class="match-pill">Why matched: ${matchReasons.join(' • ')}</div>` : ''}
-      </div>
-      <div class="mentor-actions">
-        <button class="btn btn--primary" onclick="requestSession('${mentor.id}', '${skill?.skill || ''}')">Request Session</button>
-        <button class="btn btn--outline" onclick="viewUserProfile('${mentor.id}')">View Profile</button>
+        <button class="btn btn--primary" onclick="requestSession('${mentor.id}', '${skill?.skill || ''}', '${mentor.name}')">Request Session</button>
       </div>
     </div>
   `;
 }
 
-function applyFilters() {
-  appState.filters = {
-    campus: document.getElementById('filter-campus').value,
-    proficiency: parseInt(document.getElementById('filter-proficiency').value),
-    verified: document.getElementById('filter-verified').checked,
-    availability: document.getElementById('filter-availability').value
-  };
-  
-  loadMentorResults();
-}
-
-function handleLandingSearch() {
-  const query = document.getElementById('landing-search').value;
-  if (!appState.currentUser) {
-    showToast('Please sign in to search for mentors', 'error');
-    navigateTo('signin');
-    return;
-  }
-  
-  appState.searchQuery = query;
-  document.getElementById('dashboard-search').value = query;
-  navigateTo('dashboard');
-  loadMentorResults();
-}
-
-// Add event listener for dashboard search
-document.addEventListener('DOMContentLoaded', () => {
-  const dashboardSearch = document.getElementById('dashboard-search');
-  if (dashboardSearch) {
-    dashboardSearch.addEventListener('input', (e) => {
-      appState.searchQuery = e.target.value;
-      loadMentorResults();
-    });
-  }
-});
-
-// ==================== SESSION REQUEST ====================
-function requestSession(mentorId, skill) {
-  const mentor = appState.users.find(u => u.id === mentorId);
-  if (!mentor) return;
-  
-  appState.currentRequest = {
-    mentorId,
-    mentorName: mentor.name,
-    skill
-  };
+// ==================== SESSION REQUESTS ====================
+function requestSession(mentorId, skill, mentorName) {
+  appState.currentRequest = { mentorId, mentorName, skill };
   
   document.getElementById('request-skill').value = skill;
-  document.getElementById('request-mentor').value = mentor.name;
+  document.getElementById('request-mentor').value = mentorName;
   
   openModal('request-modal');
   showRequestStep(1);
 }
 
-function showRequestStep(step) {
-  document.querySelectorAll('.request-step').forEach(s => s.style.display = 'none');
-  document.getElementById(`request-step-${step}`).style.display = 'block';
-  
-  if (step === 3) {
-    // Show review
-    document.getElementById('review-skill').textContent = appState.currentRequest.skill;
-    document.getElementById('review-mentor').textContent = appState.currentRequest.mentorName;
-    
-    const slots = [
-      document.getElementById('slot-1').value,
-      document.getElementById('slot-2').value,
-      document.getElementById('slot-3').value
-    ].filter(s => s);
-    
-    document.getElementById('review-slots').innerHTML = slots.map(slot => {
-      const date = new Date(slot);
-      return `<li>${date.toLocaleString()}</li>`;
-    }).join('');
-  }
-}
-
-function submitSessionRequest() {
+async function submitSessionRequest() {
   const slots = [
     document.getElementById('slot-1').value,
     document.getElementById('slot-2').value,
     document.getElementById('slot-3').value
-  ].filter(s => s).map(s => new Date(s));
+  ].filter(s => s).map(s => new Date(s).toISOString());
   
-  if (slots.length < 3) {
-    showToast('Please provide 3 time slots', 'error');
+  if (slots.length === 0) {
+    showToast('Please pick at least 1 slot', 'error');
     return;
   }
-  
+
   const newSession = {
-    id: `req_${Date.now()}`,
     learnerId: appState.currentUser.id,
+    learnerName: appState.currentUser.name,
     teacherId: appState.currentRequest.mentorId,
+    teacherName: appState.currentRequest.mentorName,
     skill: appState.currentRequest.skill,
-    status: 'pending',
-    proposedSlots: slots
+    status: 'active', // Auto-accepted for demo purposes
+    chosenSlot: slots[0],
+    createdAt: new Date().toISOString()
   };
-  
-  appState.sessions.push(newSession);
-  
-  closeModal('request-modal');
-  showToast('Session request sent! Mentors typically respond within 2 hours.', 'success');
-  
-  // Simulate auto-acceptance after 2 seconds for demo
-  setTimeout(() => {
-    acceptSessionRequest(newSession.id);
-  }, 2000);
-  
-  loadLearningTab();
-}
 
-function acceptSessionRequest(sessionId) {
-  const session = appState.sessions.find(s => s.id === sessionId);
-  if (!session) return;
-  
-  session.status = 'active';
-  session.chosenSlot = session.proposedSlots[0];
-  session.meetLink = `https://meet.jitsi.org/skillswap_${sessionId}`;
-  
-  if (session.learnerId === appState.currentUser.id) {
-    showToast('Session confirmed! Check My Learning tab.', 'success');
+  try {
+    await window.addDoc(window.collection(window.db, "sessions"), newSession);
+    closeModal('request-modal');
+    showToast('Session Confirmed! Check "My Learning" tab.', 'success');
     loadLearningTab();
+  } catch (error) {
+    showToast('Failed to send request', 'error');
+    console.error(error);
   }
-}
-
-function cancelRequest(sessionId) {
-  const index = appState.sessions.findIndex(s => s.id === sessionId);
-  if (index !== -1) {
-    appState.sessions.splice(index, 1);
-    showToast('Request cancelled', 'success');
-    loadLearningTab();
-  }
-}
-
-function completeSession(sessionId) {
-  appState.currentSessionId = sessionId;
-  openModal('feedback-modal');
-}
-
-function submitFeedback(helpful) {
-  const session = appState.sessions.find(s => s.id === appState.currentSessionId);
-  if (!session) return;
-  
-  const comment = document.getElementById('feedback-comment').value;
-  
-  session.status = 'completed';
-  session.feedback = {
-    helpful,
-    comment
-  };
-  session.completedAt = new Date();
-  
-  // Transfer credits
-  if (helpful) {
-    const learner = appState.users.find(u => u.id === session.learnerId);
-    const teacher = appState.users.find(u => u.id === session.teacherId);
-    
-    if (learner) learner.creditsBalance -= 1;
-    if (teacher) teacher.creditsBalance += 1;
-    
-    // Add transactions
-    appState.creditTransactions.push({
-      id: `tx_${Date.now()}_1`,
-      userId: session.learnerId,
-      amount: -1,
-      type: 'spent',
-      description: `Learned ${session.skill} from ${teacher.name}`,
-      sessionId: session.id,
-      timestamp: new Date()
-    });
-    
-    appState.creditTransactions.push({
-      id: `tx_${Date.now()}_2`,
-      userId: session.teacherId,
-      amount: 1,
-      type: 'earned',
-      description: `Taught ${session.skill} to ${learner.name}`,
-      sessionId: session.id,
-      timestamp: new Date()
-    });
-  }
-  
-  closeModal('feedback-modal');
-  document.getElementById('feedback-comment').value = '';
-  showToast('Thank you for your feedback! Credit transferred.', 'success');
-  
-  loadDashboard();
 }
 
 // ==================== LEARNING TAB ====================
-function loadLearningTab() {
-  const userSessions = appState.sessions.filter(s => 
-    s.learnerId === appState.currentUser.id
+async function loadLearningTab() {
+  if (!appState.currentUser) return;
+  
+  // Query sessions where I am the learner
+  const q = window.query(
+    window.collection(window.db, "sessions"),
+    window.where("learnerId", "==", appState.currentUser.id)
   );
   
-  // Active sessions
-  const activeSessions = userSessions.filter(s => s.status === 'active');
+  const snapshot = await window.getDocs(q);
+  const sessions = [];
+  snapshot.forEach(doc => sessions.push({ id: doc.id, ...doc.data() }));
+  
+  // Sort sessions
+  const active = sessions.filter(s => s.status === 'active' || s.status === 'pending');
+  const completed = sessions.filter(s => s.status === 'completed');
+  
+  // Render Active
   const activeContainer = document.getElementById('active-sessions');
-  
-  if (activeSessions.length === 0) {
-    activeContainer.innerHTML = '<p style="color: var(--color-text-secondary);">No active sessions</p>';
+  if(active.length === 0) {
+      activeContainer.innerHTML = '<p>No active sessions</p>';
   } else {
-    activeContainer.innerHTML = activeSessions.map(session => {
-      const teacher = appState.users.find(u => u.id === session.teacherId);
-      const timeUntil = getTimeUntil(session.chosenSlot);
-      
-      return `
+      activeContainer.innerHTML = active.map(session => `
         <div class="session-card">
           <div class="session-header">
-            <div class="session-info">
-              <h4>${session.skill} with ${teacher.name}</h4>
-              <div class="session-time">${new Date(session.chosenSlot).toLocaleString()}</div>
-            </div>
-            <div class="status-badge active">${timeUntil}</div>
+            <h4>${session.skill} with ${session.teacherName}</h4>
+            <div class="status-badge active">Active</div>
           </div>
           <div class="session-actions">
-            <a href="${session.meetLink}" target="_blank" class="btn btn--primary btn--sm">Join Meeting</a>
-            <button class="btn btn--outline btn--sm" onclick="completeSession('${session.id}')">Mark Complete</button>
+            <a href="https://meet.jit.si/skillswap_${session.id}" target="_blank" class="btn btn--primary btn--sm">Join Video</a>
+            <button class="btn btn--outline btn--sm" onclick="completeSession('${session.id}', '${session.teacherId}', '${session.skill}')">Mark Complete</button>
           </div>
         </div>
-      `;
-    }).join('');
+      `).join('');
   }
-  
-  // Pending requests
-  const pendingRequests = userSessions.filter(s => s.status === 'pending');
-  const pendingContainer = document.getElementById('pending-requests');
-  
-  if (pendingRequests.length === 0) {
-    pendingContainer.innerHTML = '<p style="color: var(--color-text-secondary);">No pending requests</p>';
-  } else {
-    pendingContainer.innerHTML = pendingRequests.map(session => {
-      const teacher = appState.users.find(u => u.id === session.teacherId);
-      
-      return `
-        <div class="session-card">
-          <div class="session-header">
-            <div class="session-info">
-              <h4>${session.skill} with ${teacher.name}</h4>
-              <div class="session-time">Awaiting response...</div>
-            </div>
-            <div class="status-badge pending">Pending</div>
-          </div>
-          <div class="session-actions">
-            <button class="btn btn--outline btn--sm" onclick="cancelRequest('${session.id}')">Cancel Request</button>
-          </div>
-        </div>
-      `;
-    }).join('');
-  }
-  
-  // Past sessions
-  const pastSessions = userSessions.filter(s => s.status === 'completed');
+
+  // Render Past
   const pastContainer = document.getElementById('past-sessions');
-  
-  if (pastSessions.length === 0) {
-    pastContainer.innerHTML = '<p style="color: var(--color-text-secondary);">No past sessions</p>';
-  } else {
-    pastContainer.innerHTML = pastSessions.map(session => {
-      const teacher = appState.users.find(u => u.id === session.teacherId);
-      
-      return `
-        <div class="session-card">
-          <div class="session-info">
-            <h4>${session.skill} with ${teacher.name}</h4>
-            <div class="session-time">Completed: ${new Date(session.completedAt).toLocaleDateString()}</div>
-            ${session.feedback ? `
-              <div style="margin-top: 8px;">
-                <strong>Your feedback:</strong> ${session.feedback.helpful ? '👍 Helpful' : '👎 Not helpful'}
-                ${session.feedback.comment ? `<br><em>"${session.feedback.comment}"</em>` : ''}
-              </div>
-            ` : ''}
-          </div>
-        </div>
-      `;
-    }).join('');
-  }
-  
-  // Profile completeness
+  pastContainer.innerHTML = completed.length ? completed.map(s => `
+    <div class="session-card">
+        <h4>${s.skill} with ${s.teacherName}</h4>
+        <span class="status-badge">Completed</span>
+    </div>
+  `).join('') : '<p>No past sessions</p>';
+
   updateProfileCompleteness();
 }
 
-function getTimeUntil(date) {
-  const now = new Date();
-  const target = new Date(date);
-  const diff = target - now;
-  
-  if (diff < 0) return 'Now';
-  
-  const hours = Math.floor(diff / (1000 * 60 * 60));
-  const days = Math.floor(hours / 24);
-  
-  if (days > 0) return `In ${days} day${days > 1 ? 's' : ''}`;
-  if (hours > 0) return `In ${hours} hour${hours > 1 ? 's' : ''}`;
-  return 'Soon';
-}
-
 function updateProfileCompleteness() {
-  const user = appState.currentUser;
-  
-  document.getElementById('status-photo').textContent = user.photoUrl ? '100%' : '0%';
-  document.getElementById('status-bio').textContent = user.bio ? '100%' : '0%';
-  document.getElementById('status-video').textContent = user.introVideo ? '100%' : '0%';
-  document.getElementById('status-verified').textContent = 
-    user.badges.includes('Verified Campus') ? '100%' : '0%';
+    const user = appState.currentUser;
+    // Simple logic checks
+    document.getElementById('status-photo').textContent = user.photoUrl ? '100%' : '0%';
+    document.getElementById('status-bio').textContent = user.bio ? '100%' : '0%';
+    document.getElementById('status-verified').textContent = user.badges && user.badges.includes('Verified Campus') ? '100%' : '0%';
 }
 
-// ==================== PROFILE ====================
-function loadProfile() {
-  const user = appState.currentUser;
-  if (!user) return;
-  
-  const initials = user.name.split(' ').map(n => n[0]).join('');
-  document.getElementById('profile-avatar-large').textContent = initials;
-  document.getElementById('profile-name').textContent = user.name;
-  document.getElementById('profile-details').textContent = 
-    `${user.role} • ${user.college || user.company || 'Professional'}`;
-  document.getElementById('profile-bio').textContent = user.bio || 'No bio yet';
-  
-  // Teach skills
-  const teachSkillsList = document.getElementById('teach-skills-list');
-  if (user.teachSkills.length === 0) {
-    teachSkillsList.innerHTML = '<p style="color: var(--color-text-secondary);">No skills added yet</p>';
-  } else {
-    teachSkillsList.innerHTML = user.teachSkills.map(ts => `
-      <div class="skill-item">
-        <div>
-          <strong>${ts.skill}</strong>
-          ${ts.verified ? ' ✅' : ''}
-        </div>
-        <div class="stars">${'⭐'.repeat(ts.level)}</div>
-      </div>
-    `).join('');
-  }
-  
-  // Learn skills
-  const learnSkillsList = document.getElementById('learn-skills-list');
-  if (user.learnSkills.length === 0) {
-    learnSkillsList.innerHTML = '<p style="color: var(--color-text-secondary);">No skills added yet</p>';
-  } else {
-    learnSkillsList.innerHTML = user.learnSkills.map(ls => `
-      <div class="skill-item">
-        <strong>${ls.skill}</strong>
-        <span style="font-size: 12px; color: var(--color-text-secondary);">${ls.priority} priority</span>
-      </div>
-    `).join('');
-  }
-  
-  // Badges
-  const badgesContainer = document.getElementById('badges-container');
-  if (user.badges.length === 0) {
-    badgesContainer.innerHTML = '<p style="color: var(--color-text-secondary);">No badges earned yet</p>';
-  } else {
-    badgesContainer.innerHTML = user.badges.map(badge => `
-      <div class="badge">${badge}</div>
-    `).join('');
-  }
-  
-  // Reputation
-  document.getElementById('profile-helpful-rate').textContent = 
-    user.helpfulRate > 0 ? `${Math.round(user.helpfulRate * 100)}% helpful` : 'No sessions yet';
-  document.getElementById('profile-completion-rate').textContent = 
-    user.completionRate > 0 ? `${Math.round(user.completionRate * 100)}%` : 'No sessions yet';
+// ==================== COMPLETION & CREDITS ====================
+function completeSession(sessionId, teacherId, skill) {
+  appState.currentRequest = { sessionId, teacherId, skill }; 
+  openModal('feedback-modal');
 }
 
-function viewUserProfile(userId) {
-  // For simplicity, just show alert. In full version, would show modal or navigate
-  const user = appState.users.find(u => u.id === userId);
-  if (user) {
-    alert(`${user.name}\n${user.bio}\n\nSkills: ${user.teachSkills.map(ts => ts.skill).join(', ')}`);
-  }
-}
+async function submitFeedback(isHelpful) {
+  const { sessionId, teacherId, skill } = appState.currentRequest;
+  const learnerId = appState.currentUser.id;
+  const comment = document.getElementById('feedback-comment').value;
 
-function showAddSkillModal(type) {
-  const skill = prompt(`Enter skill name to ${type === 'teach' ? 'teach' : 'learn'}:`);
-  if (!skill) return;
-  
-  if (type === 'teach') {
-    const level = parseInt(prompt('Skill level (1-5):'));
-    if (level >= 1 && level <= 5) {
-      appState.currentUser.teachSkills.push({
-        skill,
-        level,
-        verified: false
+  try {
+    await window.runTransaction(window.db, async (transaction) => {
+      // 1. Get references
+      const sessionRef = window.doc(window.db, "sessions", sessionId);
+      const learnerRef = window.doc(window.db, "users", learnerId);
+      const teacherRef = window.doc(window.db, "users", teacherId);
+      
+      const learnerDoc = await transaction.get(learnerRef);
+      const teacherDoc = await transaction.get(teacherRef);
+
+      // 2. Logic: Check credits
+      const learnerCredits = learnerDoc.data().creditsBalance;
+      if (learnerCredits < 1) {
+        throw "Not enough credits!";
+      }
+
+      // 3. Update Balances
+      if (isHelpful) {
+        transaction.update(learnerRef, { creditsBalance: learnerCredits - 1 });
+        transaction.update(teacherRef, { creditsBalance: teacherDoc.data().creditsBalance + 1 });
+      }
+
+      // 4. Close Session
+      transaction.update(sessionRef, {
+        status: 'completed',
+        feedback: { isHelpful, comment },
+        completedAt: new Date().toISOString()
       });
-    }
-  } else {
-    const priority = prompt('Priority (High/Medium/Low):') || 'Medium';
-    appState.currentUser.learnSkills.push({
-      skill,
-      priority
+
+      // 5. Add Transaction Record
+      const newTxRef = window.doc(window.collection(window.db, "transactions"));
+      transaction.set(newTxRef, {
+        fromId: learnerId,
+        toId: teacherId,
+        amount: 1,
+        skill: skill,
+        timestamp: new Date().toISOString()
+      });
     });
+
+    closeModal('feedback-modal');
+    showToast('Feedback sent & Credits transferred!', 'success');
+    loadLearningTab();
+  } catch (e) {
+    showToast('Transaction failed: ' + e, 'error');
   }
-  
-  loadProfile();
-  showToast('Skill added!', 'success');
 }
 
-// ==================== CREDITS LEDGER ====================
-function loadCreditsLedger() {
-  if (!appState.currentUser) return;
-  
-  document.getElementById('ledger-balance').textContent = appState.currentUser.creditsBalance;
-  
-  const userTransactions = appState.creditTransactions
-    .filter(tx => tx.userId === appState.currentUser.id)
-    .sort((a, b) => b.timestamp - a.timestamp);
-  
-  const ledgerList = document.getElementById('ledger-list');
-  
-  if (userTransactions.length === 0) {
-    ledgerList.innerHTML = '<p style="color: var(--color-text-secondary); text-align: center; padding: 48px;">No transactions yet</p>';
-    return;
-  }
-  
-  ledgerList.innerHTML = userTransactions.map(tx => `
-    <div class="ledger-item">
-      <div class="ledger-header">
-        <div class="ledger-amount ${tx.amount > 0 ? 'positive' : 'negative'}">
-          ${tx.amount > 0 ? '+' : ''}${tx.amount}
-        </div>
-        <div style="font-size: 12px; color: var(--color-text-secondary);">
-          ${tx.timestamp.toLocaleDateString()} ${tx.timestamp.toLocaleTimeString()}
-        </div>
-      </div>
-      <div class="ledger-details">
-        ${tx.description}
-        ${tx.sessionId ? `<br>Session ID: ${tx.sessionId}` : ''}
-      </div>
-    </div>
-  `).join('');
-}
-
-// ==================== CAMPUS HUB ====================
-function loadCampusData() {
+// ==================== CAMPUS HUB & ADMIN ====================
+async function loadCampusData() {
   const campus = document.getElementById('campus-select').value;
   if (!campus) {
     document.getElementById('campus-content').style.display = 'none';
     return;
   }
-  
   document.getElementById('campus-content').style.display = 'block';
   
-  // Get campus users
-  const campusUsers = appState.users.filter(u => u.college === campus);
-  
-  // Top teachers
+  // Basic query for campus
+  const q = window.query(window.collection(window.db, "users"), window.where("campus", "==", campus));
+  const snapshot = await window.getDocs(q);
+  let campusUsers = [];
+  snapshot.forEach(doc => campusUsers.push(doc.data()));
+
+  // Render Top Teachers
   const topTeachers = campusUsers
-    .filter(u => u.teachSkills.length > 0)
-    .sort((a, b) => b.helpfulRate - a.helpfulRate)
+    .filter(u => u.teachSkills && u.teachSkills.length > 0)
     .slice(0, 5);
+
+  document.getElementById('top-teachers-list').innerHTML = topTeachers.map((u, i) => `
+    <div class="leaderboard-item"><span>${i+1}. ${u.name}</span><span>${u.creditsBalance} Cr</span></div>
+  `).join('');
   
-  const topTeachersList = document.getElementById('top-teachers-list');
-  topTeachersList.innerHTML = topTeachers.map((user, index) => {
-    const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`;
-    return `
-      <div class="leaderboard-item">
-        <div>
-          <span style="font-size: 20px; margin-right: 8px;">${medal}</span>
-          <strong>${user.name}</strong>
-        </div>
-        <div style="font-size: 14px; color: var(--color-text-secondary);">
-          ${Math.round(user.helpfulRate * 100)}% helpful
-        </div>
-      </div>
-    `;
-  }).join('');
-  
-  // Top skills
-  const skillCounts = {};
-  campusUsers.forEach(user => {
-    user.teachSkills.forEach(ts => {
-      skillCounts[ts.skill] = (skillCounts[ts.skill] || 0) + 1;
+  document.getElementById('top-skills-list').innerHTML = `<div class="leaderboard-item">1. Python</div><div class="leaderboard-item">2. React</div>`;
+}
+
+async function loadAdminDashboard() {
+    const usersSnap = await window.getDocs(window.collection(window.db, "users"));
+    document.getElementById('admin-total-users').textContent = usersSnap.size;
+    const sessionsSnap = await window.getDocs(window.collection(window.db, "sessions"));
+    document.getElementById('admin-total-sessions').textContent = sessionsSnap.size;
+}
+
+async function loadCreditsLedger() {
+    if(!appState.currentUser) return;
+    document.getElementById('ledger-balance').textContent = appState.currentUser.creditsBalance;
+    // In a full app, query the 'transactions' collection here
+    document.getElementById('ledger-list').innerHTML = '<p style="text-align:center">Transaction history loading...</p>';
+}
+
+// ==================== PROFILE ====================
+async function loadProfile() {
+    if (!appState.currentUser) return;
+    const user = appState.currentUser;
+    
+    document.getElementById('profile-name').textContent = user.name;
+    document.getElementById('profile-details').textContent = `${user.role} • ${user.campus}`;
+    
+    const teachList = document.getElementById('teach-skills-list');
+    teachList.innerHTML = user.teachSkills ? 
+        user.teachSkills.map(s => `<div class="skill-item"><strong>${s.skill}</strong></div>`).join('') : 'No skills';
+}
+
+function showAddSkillModal(type) {
+    const skill = prompt("Enter skill name:");
+    if (!skill) return;
+
+    const userRef = window.doc(window.db, "users", appState.currentUser.id);
+    const field = type === 'teach' ? 'teachSkills' : 'learnSkills';
+    
+    window.updateDoc(userRef, {
+        [field]: window.arrayUnion({ skill: skill, level: 3, verified: false })
+    }).then(() => {
+        showToast('Skill added!', 'success');
+        // Update local state
+        if(!appState.currentUser[field]) appState.currentUser[field] = [];
+        appState.currentUser[field].push({ skill, level:3 });
+        loadProfile();
     });
-  });
-  
-  const topSkills = Object.entries(skillCounts)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5);
-  
-  const topSkillsList = document.getElementById('top-skills-list');
-  topSkillsList.innerHTML = topSkills.map(([skill, count], index) => `
-    <div class="leaderboard-item">
-      <strong>${index + 1}. ${skill}</strong>
-      <span style="font-size: 14px; color: var(--color-text-secondary);">
-        ${count} mentor${count > 1 ? 's' : ''}
-      </span>
-    </div>
-  `).join('');
-  
-  // Rising skills
-  const risingSkills = appState.skills
-    .filter(s => s.trend.includes('↑'))
-    .slice(0, 5);
-  
-  const risingSkillsList = document.getElementById('rising-skills-list');
-  risingSkillsList.innerHTML = risingSkills.map(skill => `
-    <div class="leaderboard-item">
-      <strong>${skill.name}</strong>
-      <span style="color: var(--color-success);">${skill.trend}</span>
-    </div>
-  `).join('');
 }
 
-// ==================== ADMIN ====================
-function loadAdminDashboard() {
-  document.getElementById('admin-total-users').textContent = appState.users.length;
-  document.getElementById('admin-total-sessions').textContent = appState.sessions.length;
-  document.getElementById('admin-total-credits').textContent = 
-    appState.creditTransactions.length * 1;
-  
-  // Skills taxonomy
-  const taxonomyList = document.getElementById('skills-taxonomy-list');
-  taxonomyList.innerHTML = appState.skills.map(skill => `
-    <div class="skill-item">
-      <div>
-        <strong>${skill.name}</strong>
-        <span style="font-size: 12px; color: var(--color-text-secondary); margin-left: 8px;">
-          ${skill.popularity} requests ${skill.trend}
-        </span>
-      </div>
-    </div>
-  `).join('');
+// ==================== UTILS & EXPORTS ====================
+function openModal(id) { document.getElementById(id).classList.add('active'); }
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+function showRequestStep(step) {
+  document.querySelectorAll('.request-step').forEach(s => s.style.display = 'none');
+  document.getElementById(`request-step-${step}`).style.display = 'block';
 }
-
-function toggleFeatureFlag(flag) {
-  appState.featureFlags[flag.replace('-', '')] = 
-    document.getElementById(`flag-${flag}`).checked;
-  showToast(`Feature flag '${flag}' updated`, 'success');
+function toggleUserMenu() { document.getElementById('user-dropdown').classList.toggle('active'); }
+function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    event.target.classList.add('active');
+    document.getElementById(`${tab}-tab`).classList.add('active');
 }
-
-// ==================== MODALS ====================
-function openModal(modalId) {
-  document.getElementById(modalId).classList.add('active');
+function applyFilters() { loadMentorResults(); }
+function showToast(msg, type) {
+    const t = document.createElement('div');
+    t.className = `toast ${type}`;
+    t.textContent = msg;
+    document.getElementById('toast-container').appendChild(t);
+    setTimeout(() => t.remove(), 3000);
 }
-
-function closeModal(modalId) {
-  document.getElementById(modalId).classList.remove('active');
+function handleLandingSearch() {
+    appState.searchQuery = document.getElementById('landing-search').value;
+    navigateTo('dashboard');
 }
-
-// ==================== TOAST NOTIFICATIONS ====================
-function showToast(message, type = 'success') {
-  const toast = document.createElement('div');
-  toast.className = `toast ${type}`;
-  toast.textContent = message;
-  
-  document.getElementById('toast-container').appendChild(toast);
-  
-  setTimeout(() => {
-    toast.remove();
-  }, 3000);
-}
-
-// ==================== LANDING PAGE ====================
 function renderLandingPage() {
-  // Render trending skills
-  const trendingContainer = document.getElementById('trending-skills');
-  const topSkills = appState.skills.slice(0, 8);
-  
-  trendingContainer.innerHTML = topSkills.map(skill => `
-    <div class="skill-chip">${skill.name}</div>
-  `).join('');
-  
-  // Render rising skills
-  const risingContainer = document.getElementById('rising-skills');
-  const risingSkills = appState.skills
-    .filter(s => s.trend.includes('↑'))
-    .sort((a, b) => {
-      const aPercent = parseInt(a.trend.match(/\d+/)[0]);
-      const bPercent = parseInt(b.trend.match(/\d+/)[0]);
-      return bPercent - aPercent;
-    })
-    .slice(0, 5);
-  
-  risingContainer.innerHTML = risingSkills.map(skill => `
-    <div class="skill-chip">${skill.name} ${skill.trend}</div>
-  `).join('');
+    const list = document.getElementById('trending-skills');
+    if(list) list.innerHTML = appState.allSkills.map(s => `<div class="skill-chip">${s.name}</div>`).join('');
+    // Render rising skills
+    const risingContainer = document.getElementById('rising-skills');
+    if(risingContainer) {
+         risingContainer.innerHTML = appState.allSkills.map(skill => `
+            <div class="skill-chip">${skill.name} ${skill.trend}</div>
+        `).join('');
+    }
 }
 
-// ==================== INITIALIZATION ====================
-document.addEventListener('DOMContentLoaded', () => {
-  initializeMockData();
-  renderLandingPage();
-  
-  // Start on landing page
-  navigateTo('landing');
-});
+// Expose functions to HTML
+window.navigateTo = navigateTo;
+window.handleGoogleSignIn = handleGoogleSignIn;
+window.handleLogout = handleLogout;
+window.selectRole = selectRole;
+window.renderMentorCard = renderMentorCard;
+window.requestSession = requestSession;
+window.submitSessionRequest = submitSessionRequest;
+window.completeSession = completeSession;
+window.submitFeedback = submitFeedback;
+window.loadCampusData = loadCampusData;
+window.showAddSkillModal = showAddSkillModal;
+window.openModal = openModal;
+window.closeModal = closeModal;
+window.showRequestStep = showRequestStep;
+window.toggleUserMenu = toggleUserMenu;
+window.switchTab = switchTab;
+window.applyFilters = applyFilters;
+window.handleLandingSearch = handleLandingSearch;
+window.renderLandingPage = renderLandingPage;
+
+
+// ==========================================
+// MOCK DATA SEEDER (Run seedDatabase() in console)
+// ==========================================
+window.seedDatabase = async function() {
+  console.log("Starting Seed...");
+  const mockUsers = [
+    {
+      id: 'user_1',
+      name: 'Rohit Sharma',
+      email: 'learner@test.com',
+      role: 'student',
+      college: 'JECRC',
+      campus: 'JECRC',
+      creditsBalance: 4,
+      teachSkills: [{ skill: 'Python', level: 4 }, { skill: 'Git', level: 3 }],
+      badges: ['Verified Campus', '10+ hours taught']
+    },
+    {
+      id: 'user_2',
+      name: 'Asha Patel',
+      role: 'student',
+      college: 'BITS Pilani',
+      campus: 'BITS Pilani',
+      creditsBalance: 8,
+      teachSkills: [{ skill: 'UI/UX Design', level: 5 }, { skill: 'Figma', level: 5 }],
+      badges: ['Verified Campus']
+    },
+    {
+      id: 'user_3',
+      name: 'Priya Singh',
+      college: 'Delhi University',
+      campus: 'Delhi University',
+      creditsBalance: 6,
+      teachSkills: [{ skill: 'Statistics', level: 4 }],
+      badges: ['Verified Campus']
+    },
+    {
+      id: 'user_4',
+      name: 'Rahul Purohit',
+      college: 'JECRC',
+      campus: 'JECRC',
+      creditsBalance: 12,
+      teachSkills: [{ skill: 'DSA', level: 5 }, { skill: 'Java', level: 4 }],
+      badges: ['Verified Campus', 'Top Teacher']
+    }
+  ];
+
+  let count = 0;
+  for (const user of mockUsers) {
+    await window.setDoc(window.doc(window.db, "users", user.id), user);
+    console.log(`Uploaded ${user.name}`);
+    count++;
+  }
+  alert(`Uploaded ${count} users! Refresh page.`);
+};
